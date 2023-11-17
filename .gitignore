@@ -53,6 +53,7 @@ lib_managed/
 lint-r-report.log
 log/
 logs/
+modules/
 out/
 project/boot/
 project/build/target/
