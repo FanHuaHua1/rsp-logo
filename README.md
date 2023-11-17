@@ -1,5 +1,42 @@
 # Apache Spark
 
+## 使用说明（临时添加*）
+
+1. Spark编译
+
+   先clone整个项目，使用maven编译一遍整个spark项目
+
+   基本环境要求：jdk1.8 scala2.11
+
+   maven编译命令：
+
+   ```
+   set MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m"
+   mvn clean -T 12 install -D"checkstyle.skip"=true -D"maven.test.skip"=true -X
+   ```
+
+2. 单独编译rsp模块
+
+   如果你没有修改rsp代码的需求，不需要重新编译，前面的全量编译已经在rsp-spark/rsp/target下生成了rsp的jar包`spark-rsp_2.11-2.4.0.jar`，直接使用即可。
+
+   如果需要修改代码，直接进行maven单独编译rsp模块即可。
+
+   > 这里的rsp模块指的是rsp-spark/rsp这个子模块，如果前面你使用IDEA以rsp-spark这个工程作为项目根目录打开了，建议你以rsp-spark/rsp作为工程根目录重新打开。
+   >
+   > 如果需要提交代码到仓库，需要返回rsp-spark目录进行git提交（命令行）
+
+3. rsp任务运行
+
+   目前有两个demo，分别是`org.apache.spark.lrDemo`和`org.apache.spark.fpgDemo`
+
+   如果PC本地有spark环境，可以直接在IDEA中运行；如果没有，在集群上使用spark-submit提交。
+
+4. LOGO任务提交
+
+   待补充
+
+------
+
 Spark is a fast and general cluster computing system for Big Data. It provides
 high-level APIs in Scala, Java, Python, and R, and an optimized engine that
 supports general computation graphs for data analysis. It also supports a
