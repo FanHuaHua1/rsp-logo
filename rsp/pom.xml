@@ -15,6 +15,7 @@
     <openblas.version>0.3.19-1.5.7</openblas.version>
     <javacpp.version>1.5.7</javacpp.version>
     <arpack-ng.version>3.8.0-1.5.7</arpack-ng.version>
+    <scala.binary.version>2.11</scala.binary.version>
   </properties>
   <dependencies>
     <dependency>
