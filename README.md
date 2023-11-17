@@ -18,8 +18,10 @@
 2. 单独编译rsp模块
 
    如果你没有修改rsp代码的需求，不需要重新编译，前面的全量编译已经在rsp-spark/rsp/target下生成了rsp的jar包`spark-rsp_2.11-2.4.0.jar`，直接使用即可。
+    ![输入图片说明](docs/img/rsp-ide-image.png)
 
    如果需要修改代码，直接进行maven单独编译rsp模块即可。
+   ![输入图片说明](docs/img/rsp-complie-image.png)
 
    > 这里的rsp模块指的是rsp-spark/rsp这个子模块，如果前面你使用IDEA以rsp-spark这个工程作为项目根目录打开了，建议你以rsp-spark/rsp作为工程根目录重新打开。
    >
