@@ -67,13 +67,13 @@ object Entrypoint {
     var clfAlgo = algo match {
       case "LR" => new LogisticRegression()
       case "DT" => new DecisionTree()
+      case "RF" => new RandomForest()
     }
 
     for ((size, partitions) <- jobs) {
       var trainName = "train(size=%d)".format(size)
       var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
-      var partitionCount = size * partitionsUnit
-      var trainParts = (partitionCount * subs).toInt
+      var trainParts = (size * partitionsUnit * subs).toInt
       var predictParts = trainParts + predictBlocks
       printf(
         "size=%d, trainParts(%d)=%s, predictParts(%d)=%s\n",

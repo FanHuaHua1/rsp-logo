@@ -19,7 +19,7 @@ class LogisticRegression(
                           useScore: Boolean = true,
                           tail: Double = 0.05,
                           var maxIter: Int = 500,
-                          var regParam: Double = 0.1) extends LogoClassification with LogoClassifier[smileLR]{
+                          var regParam: Double = 0.1) extends ClassificationJob[smileLR]{
 
   def this() = this(null, null)
 
@@ -64,28 +64,6 @@ class LogisticRegression(
 
   override def GO(modelRdd: RDD[(smileLR, Double, Double)]): RDD[(smileLR, Double)] = {
     getValuedModels(modelRdd, useScore, tail)
-  }
-
-  override def run(saveModel:Boolean, saveModelPath:String, doEvaluate: Boolean): RDD[(smileLR, Double)]  = {
-    val modelRdd: RDD[(smileLR, Double, Double)] = etl(trainRdd).map(
-      sample => {
-        val trainSize = (sample._1.length * 0.9).toInt
-        val trainSample = (sample._1.slice(0, trainSize), sample._2.slice(0, trainSize))
-        val testSample = (sample._1.slice(trainSize, sample._1.length), sample._2.slice(trainSize, sample._1.length))
-        val (model, duration) = LO(trainSample)
-        val accuracy = estimator(predictor(model, testSample._2), testSample._1)
-        (model, duration, accuracy)
-      }
-    )
-    val valuedModels: RDD[(smileLR, Double)] = GO(modelRdd)
-    if(saveModel){
-      val saveModelPair: RDD[Pair[smileLR, Double]] = valuedModels.map(f => new Pair(f._1, f._2))
-      saveModelPair.saveAsObjectFile(saveModelPath)
-    }
-    if(doEvaluate){
-      evaluate(valuedModels, predictRdd)
-    }
-    valuedModels
   }
 
 }

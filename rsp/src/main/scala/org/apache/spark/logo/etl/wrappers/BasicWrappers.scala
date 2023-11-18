@@ -64,4 +64,17 @@ object BasicWrappers {
     }
   }
 
+  /**
+   * 不带标签
+   */
+  object toMatrixRDDWithoutLabel extends DataWrapper[Array[Array[Double]]] {
+    def apply(inputData: RDD[Row]): RspRDD[Array[Array[Double]]] = {
+      val rdd: RDD[Array[Array[Double]]] = inputData.glom().map(
+        f =>
+          f.map(r => r.get(1).asInstanceOf[DenseVector].toArray)
+      )
+      new RspRDD(rdd)
+    }
+  }
+
 }

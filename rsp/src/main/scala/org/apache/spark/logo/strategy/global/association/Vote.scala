@@ -1,4 +1,4 @@
-package org.apache.spark.logo.strategy.global
+package org.apache.spark.logo.strategy.global.association
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rsp.RspRDD
@@ -12,18 +12,11 @@ import scala.collection.mutable
  * @Date 2023/9/15 10:50
  * @desc
  */
-object MergeFPGrowth {
-  def apply(localTable: RspRDD[Stream[ItemSet]]): RspRDD[(String, Int)] = {
+object Vote {
+  def apply(itemSetRDD: RspRDD[ItemSet]): RspRDD[(String, Int)] = {
     println("正在对本地频繁项集建模进行集成.....")
 
-    val modelNum = localTable.partitions.length
-
-    val itemSetRDD: RDD[ItemSet] = localTable.mapPartitions((stream: Iterator[Stream[ItemSet]]) => {
-      //迭代器里只有一个stream.Stream[ItemSet]
-      val elem: Stream[ItemSet] = stream.next()
-      val buf: mutable.Buffer[ItemSet] = elem.collect(Collectors.toList[ItemSet]).asScala
-      buf.iterator
-    })
+    val modelNum = itemSetRDD.partitions.length
     itemSetRDD.map(f => (f.items, f.support)).saveAsObjectFile("modules/ob2")
     //将Itemset对象转成（频繁项集，出现次数）的KV对
     val itemSetWithFreq: RDD[(String, Int)] = itemSetRDD
