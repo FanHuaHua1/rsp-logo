@@ -11,7 +11,11 @@ import smile.association.ItemSet
  * @desc
  */
 package object association {
-  def fpg(minSupport: Double, itemsets: RDD[Row]) = {
-    FPGrowth(minSupport, itemsets)
+  def fpgVote(minSupport: Double, itemsets: RDD[Row]) = {
+    VoteFPGrowth(minSupport, itemsets)
+  }
+
+  def fpgBroadcast(minSupport: Double, itemsets: RDD[Row]) = {
+    BroadcastFPGrowth(minSupport, itemsets)
   }
 }

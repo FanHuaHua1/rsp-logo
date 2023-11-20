@@ -14,10 +14,10 @@ import scala.collection.mutable
  */
 object Vote {
   def apply(itemSetRDD: RspRDD[ItemSet]): RspRDD[(String, Int)] = {
-    println("正在对本地频繁项集建模进行集成.....")
+    println("开始投票集成：")
 
     val modelNum = itemSetRDD.partitions.length
-    itemSetRDD.map(f => (f.items, f.support)).saveAsObjectFile("modules/ob2")
+    //itemSetRDD.map(f => (f.items, f.support)).saveAsObjectFile("modules/ob2")
     //将Itemset对象转成（频繁项集，出现次数）的KV对
     val itemSetWithFreq: RDD[(String, Int)] = itemSetRDD
       .filter(item => item.items.length > 1)

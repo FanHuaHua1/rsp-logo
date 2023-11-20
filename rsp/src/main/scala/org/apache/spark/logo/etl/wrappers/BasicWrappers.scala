@@ -51,6 +51,26 @@ object BasicWrappers {
     }
   }
 
+  object txtToString extends DataWrapper[Array[Array[Int]]] {
+    def apply(inputData: RDD[Row]): RspRDD[Array[Array[Int]]] = {
+      println("读入text文件，向Smile算法库 频繁项集 数据格式兼容....")
+      val value: RDD[String] = inputData.map((f: Row) => f.mkString(" "))
+      val transaction = value.map((_: String).split(" ").map(_.toInt)).glom()
+      println("--------------")
+      new RspRDD(transaction)
+    }
+  }
+
+  object txtToStrinWithoutGlom extends DataWrapper[Array[Int]] {
+    def apply(inputData: RDD[Row]): RspRDD[Array[Int]] = {
+      println("读入text文件，向Smile算法库 频繁项集 数据格式兼容....")
+      val value: RDD[String] = inputData.map((f: Row) => f.mkString(" "))
+      val transaction = value.map((_: String).split(" ").map(_.toInt))
+      println("--------------")
+      new RspRDD(transaction)
+    }
+  }
+
 
   object toMatrixRDD extends DataWrapper[(Array[Int], Array[Array[Double]])] {
     def apply(inputData: RDD[Row]): RspRDD[(Array[Int], Array[Array[Double]])] = {

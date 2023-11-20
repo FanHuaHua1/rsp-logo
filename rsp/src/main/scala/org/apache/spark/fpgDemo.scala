@@ -1,6 +1,6 @@
 package org.apache.spark
 
-import org.apache.spark.logo.ml.association.fpg
+import org.apache.spark.logo.ml.association.{fpgBroadcast, fpgVote}
 import org.apache.spark.sql.RspContext.SparkSessionFunc
 import org.apache.spark.sql.SparkSession
 
@@ -18,12 +18,11 @@ object fpgDemo {
       .getOrCreate()
     println("------------环境配置成功---------------")
 
-    val transaction= spark.rspRead.parquet("datas/transaction_dataset_30.parquet")
-
-    spark.rspRead.parquet("datas/transaction_dataset_30.parquet")
+    //val transaction= spark.rspRead.parquet("datas/transaction_dataset_30.parquet")
+    val transaction= spark.rspRead.text("datas/items_40.txt")
     println("------数据加载成功-------")
-
-    fpg(0.21, transaction.rdd)
+    //fpgVote(0.2, transaction.rdd)
+    fpgBroadcast(0.2, transaction.rdd)
 
 
   }

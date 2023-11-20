@@ -1,5 +1,6 @@
 package org.apache.spark.logo.ml.association
 
+import org.apache.spark.logo.Utils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rsp.RspRDD
 import org.apache.spark.sql.RspContext._
@@ -11,47 +12,67 @@ import scala.util.Random
 
 object Entrypoint {
 
-//  def onArgs(spark: SparkSession, args: Array[String]): Unit = {
-//    printf("onArgs: %s\n", args.reduce((a, b) => a + " " + b))
-//    args(0) match {
-//      case "logov" => logoShuffleVote(spark, args(1), args(2), args(3).toDouble, args(4).toDouble, args.slice(5, args.length).map(_.toInt))
-//      case "logob" => logoShuffleBroadCast(spark, args(1), args(2).toDouble, args.slice(3, args.length).map(_.toInt))
-//      case _ => printf("Unknown type: %s\n", args(0))
-//    }
-//  }
-//
-//  def logoShuffleVote(spark: SparkSession,
-//                  sourceFile: String,
-//                  modelPath: String,
-//                  minsup:Double,
-//                  vote:Double,
-//                  blockSizes: Array[Int]): Unit = {
-//    var inputPath = modelPath
-//    val rdf: RspDataset[Row] = spark.rspRead.text(sourceFile)
-//    var jobs: Array[(Int, Array[Int])] = null
-//    val partitionsList = List.range(0, rdf.rdd.getNumPartitions)
-//    if (blockSizes.length > 0) {
-//      jobs = blockSizes.map(s => (s, Random.shuffle(partitionsList).toArray))
-//    } else {
-//      jobs = Array((0, Array()))
-//    }
-//    for ((sizex, partitions) <- jobs) {
-//      val size = Math.ceil(sizex * 0.05).toInt
-//      var trainName = "train(size=%d)".format(size)
-//      var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
-//      var partitionCount = size
-//      val trainRdd: RspRDD[Row] = rdf.rdd.getSubPartitions(partitions.slice(0, partitionCount))
-//      val l: Long = trainRdd.count()
-//      val value: RDD[String] = trainRdd.map((f: Row) => f.mkString(" "))
-////      println(value.first())
-////      println(trainRdd.first())
-////      println(trainName)
-////      println("partitionCount: " + partitionCount)
-//      SmileFPGrowth.runv(value, vote, (l * minsup / size).toInt, "/user/caimeng/fpg" + System.currentTimeMillis() + sizex * 100 + "_" + minsup, inputPath)
-//      inputPath = inputPath + "_" + sizex
-//    }
-//  }
-//
+  def onArgs(spark: SparkSession, args: Array[String]): Unit = {
+    printf("onArgs: %s\n", args.reduce((a, b) => a + " " + b))
+    args(0) match {
+      case "logov" => logoShuffleVote(spark, args(1), args(2), args(3).toDouble, args(4).toDouble, args.slice(5, args.length).map(_.toInt))
+      case "logob" => logoShuffleBroadCast(spark, args(1), args(2), args(3).toDouble, args(4).toDouble, args.slice(5, args.length).map(_.toInt))
+      case _ => printf("Unknown type: %s\n", args(0))
+    }
+  }
+
+  def logoShuffleVote(spark: SparkSession,
+                      sourceFile: String,
+                      modelPath: String,
+                      minsup:Double,
+                      sub:Double,
+                      sizes: Array[Int]): Unit = {
+    val rdf: RspDataset[Row] = spark.rspRead.text(sourceFile)
+    val jobs: Array[(Int, Array[Int])] = Utils.generateShuffleArray(sizes, rdf.rdd.getNumPartitions)
+    val fpg = new VoteFPGrowth()
+    for ((totalSize, partitions) <- jobs) {
+      val size = Math.ceil(totalSize * sub).toInt
+      var trainName = "train(size=%d)".format(size)
+      var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
+      var partitionCount = size
+      val trainRdd: RspRDD[Row] = rdf.rdd.getSubPartitions(partitions.slice(0, partitionCount))
+      val l: Long = trainRdd.count()
+      val savePath = modelPath + "_" + totalSize
+      //这里是把minsup转化为对应某个分区的比例，
+      // 比如10个块，原本是0.15的支持度，l是总数据条目，那么折算到每个块的（支持度对应的条数）就是 0.015 * l
+      fpg.minSupport = (l * minsup / size).toInt
+      fpg.itemsets = trainRdd
+      fpg.run(true, savePath)
+      //SmileFPGrowth.runv(value, vote, (l * minsup / size).toInt, "/user/caimeng/fpg" + System.currentTimeMillis() + sizex * 100 + "_" + minsup, inputPath)
+    }
+  }
+
+  def logoShuffleBroadCast(spark: SparkSession,
+                      sourceFile: String,
+                      modelPath: String,
+                      minsup: Double,
+                      sub: Double,
+                      sizes: Array[Int]): Unit = {
+    val rdf: RspDataset[Row] = spark.rspRead.text(sourceFile)
+    val jobs: Array[(Int, Array[Int])] = Utils.generateShuffleArray(sizes, rdf.rdd.getNumPartitions)
+    val fpg = new BroadcastFPGrowth()
+    for ((totalSize, partitions) <- jobs) {
+      val size = Math.ceil(totalSize * sub).toInt
+      var trainName = "train(size=%d)".format(size)
+      var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
+      var partitionCount = size
+      val trainRdd: RspRDD[Row] = rdf.rdd.getSubPartitions(partitions.slice(0, partitionCount))
+      val l: Long = trainRdd.count()
+      val savePath = modelPath + "_" + totalSize
+      //这里是把minsup转化为对应某个分区的比例，
+      // 比如10个块，原本是0.15的支持度，l是总数据条目，那么折算到每个块的（支持度对应的条数）就是 0.015 * l
+      fpg.minSupport = (l * minsup / size).toInt
+      fpg.itemsets = trainRdd
+      //fpg.run(true, savePath)
+      //SmileFPGrowth.runv(value, vote, (l * minsup / size).toInt, "/user/caimeng/fpg" + System.currentTimeMillis() + sizex * 100 + "_" + minsup, inputPath)
+    }
+  }
+
 //  def logoShuffleBroadCast(spark: SparkSession,
 //                   sourceFile: String,
 //                   minsup:Double,
@@ -69,9 +90,6 @@ object Entrypoint {
 //      println(value.first())
 //      println(trainName)
 //      val l: Long = value.count()
-////      println("trainRddCount: " + trainRdd.rdd.getNumPartitions)
-////      println("value1Count: " + value1.getNumPartitions)
-////      println("sampleBlockCount: " + sampleBlock)
 //      SmileFPGrowth.runb(value, l, minsup, (l * minsup / sampleBlock).toInt, "/user/caimeng/xxx1size_" + size + "_minsup_0.15_new_50_")
 //    }
 //  }

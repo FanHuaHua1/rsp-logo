@@ -58,7 +58,6 @@ object Entrypoint {
 
     printf("fitLogo: algorithm = %s\n", algo)
     printf("fitLogo: sourceFile = %s\n", sourceFile)
-    var inputPath = modelPath
     var rdf = spark.rspRead.parquet(sourceFile)
     var fileList = centersFile.split(":")
     val centerMap = readCenters(spark, fileList(0))
@@ -66,13 +65,14 @@ object Entrypoint {
       if(fileList.length > 1) {
         fileList(1)
       }else{
-        sourceFile
+        val sourceFilePath: Array[String] = sourceFile.split("/")
+        sourceFilePath(sourceFilePath.length - 1)
       }
     }
     val centers = centerMap(key)
-    var clsAlgo = algo match {
+    val cltAlgo = algo match {
       case "kmeans" => new KMeans()
-      //case "DT" => new DecisionTree()
+      case "bisecting" => new BisectingKMeans()
     }
 
     val jobs: Array[(Int, Array[Int])] = Utils.generateShuffleArray(sizes, rdf.rdd.getNumPartitions)
@@ -80,15 +80,16 @@ object Entrypoint {
     for ((size, partitions) <- jobs) {
       var trainName = "train(size=%d)".format(size)
       var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
-      var modelName = "models/logo_%s_%s_%d_%s.ml".format(algo, sourceFile, size, beginTime)
+      //var modelName = "models/logo_%s_%s_%d_%s.ml".format(algo, sourceFile, size, beginTime)
       var trainParts = (size * partitionsUnit * subs).toInt
       var predictParts = trainParts + tests
       val (trainRdd, testRdd) = rdf.rdd.getTrainAndPredictPartitions(partitions, trainParts, predictParts)
-      clsAlgo.trainRdd = trainRdd
-      clsAlgo.predictRdd = testRdd
-      val feature: Array[Array[Double]] = clsAlgo.run("")
-      spark.sparkContext.makeRDD(feature).saveAsObjectFile(inputPath)
-      inputPath = inputPath + "_" + size
+      cltAlgo.trainRdd = trainRdd
+      cltAlgo.predictRdd = testRdd
+      cltAlgo.trainName = trainName
+      cltAlgo.centers = centers
+      val inputPath = modelPath + "_" + size
+      cltAlgo.run(spark, true, inputPath, true)
     }
   }
 }

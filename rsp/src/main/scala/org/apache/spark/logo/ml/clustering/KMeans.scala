@@ -57,7 +57,7 @@ class KMeans(
 object KMeans {
   def apply(rspRdd: RspRDD[Row], trainParNums: Int, predictParNums: Int, centerPath: String = "", maxIterations: Int = 100, tol: Double = 1.0E-4): Array[Array[Double]] = {
     val (trainRdd, predictRdd) = Utils.transform(rspRdd, trainParNums, predictParNums)
-    new KMeans(trainRdd, predictRdd).run("")
+    new KMeans(trainRdd, predictRdd).run(null, false, "", false)
   }
 
 }

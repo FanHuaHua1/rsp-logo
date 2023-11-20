@@ -15,6 +15,7 @@ abstract class ClassificationJob[M] extends Serializable with LogoClassifier[M]{
   var predictRdd: RDD[Row]
   val useScore: Boolean = true
   val tail: Double = 0.05
+  var trainName: String = ""
 
   override def run(saveModel: Boolean, saveModelPath: String, doEvaluate: Boolean): RDD[(M, Double)] = {
     val modelRdd: RDD[(M, Double, Double)] = etl(trainRdd).map(

@@ -3,12 +3,9 @@ package org.apache.spark.logo.ml.clustering
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rdd.RDD.numericRDDToDoubleRDDFunctions
-import org.apache.spark.rsp.RspRDD
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.RspContext._
-import spire.ClassTag
+import org.apache.spark.sql.{Row, SparkSession}
+
 import java.io.Serializable
-import scala.reflect.ClassTag
 
 /**
  * @Author Lingxiang Zhao
@@ -20,9 +17,9 @@ abstract class ClusteringJob[M] extends Serializable with LogoClustering[M] {
   var predictRdd: RDD[Row]
   var k: Int = 2
   var centers: Array[Array[Double]] = null
-  val trainName: String = ""
+  var trainName: String = ""
 
-  def run(modelName: String = ""): FEATURE = {
+  def run(spark: SparkSession, saveModel: Boolean, saveModelPath: String, doEvaluate: Boolean): FEATURE = {
     printf("%s start\n", trainName)
     val begin = System.nanoTime()
     val rdd = etl(trainRdd)
@@ -46,19 +43,21 @@ abstract class ClusteringJob[M] extends Serializable with LogoClustering[M] {
     val duration = System.nanoTime() - begin
     printf("%s finished\n", trainName)
     printf("Time spend: %f\n", duration * 1e-9)
-//
-//    val distance = minDistance(centers, predictCenters)
-//    printf("%s Distance: %f\n", trainName, distance)
-//    if (predictRdd == null) {
-//      printf("%s Purity: %f\n", trainName, 1.0)
-//      return predictCenters
-//    }
-//
-//    var purity = etl(predictRdd).map(item => getPurity(model, item)).mean()
-//    printf("%s Purity: %f\n", trainName, purity)
-//
-//    centers.foreach(showArray)
-//    predictCenters.foreach(showArray)
+    if(doEvaluate){
+      val distance = minDistance(centers, predictCenters)
+      printf("%s Distance: %f\n", trainName, distance)
+      if (predictRdd == null) {
+        printf("%s Purity: %f\n", trainName, 1.0)
+        return predictCenters
+      }
+      var purity = etl(predictRdd).map(item => getPurity(model, item)).mean()
+      printf("%s Purity: %f\n", trainName, purity)
+      centers.foreach(showArray)
+    }
+    if(saveModel){
+      spark.sparkContext.makeRDD(predictCenters).saveAsObjectFile(saveModelPath)
+    }
+    predictCenters.foreach(showArray)
     //    model.write.save(modelName)
     predictCenters
   }

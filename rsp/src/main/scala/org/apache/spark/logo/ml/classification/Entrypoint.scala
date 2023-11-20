@@ -58,9 +58,7 @@ object Entrypoint {
                   tails: Double,
                   partitionsUnit: Double,
                   sizes: Array[Int], useScore: Boolean=true): Unit = {
-    var inputPath = modelPath
     var rdf = spark.rspRead.parquet(sourceFile)
-
     val jobs: Array[(Int, Array[Int])] = Utils.generateShuffleArray(sizes, rdf.rdd.getNumPartitions)
     //println("jobs: " + jobs.map(_._1).toList + jobs.map(_._2.toList).toList)
     var predictBlocks = math.ceil(predicts).toInt
@@ -72,7 +70,7 @@ object Entrypoint {
 
     for ((size, partitions) <- jobs) {
       var trainName = "train(size=%d)".format(size)
-      var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
+      //var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
       var trainParts = (size * partitionsUnit * subs).toInt
       var predictParts = trainParts + predictBlocks
       printf(
@@ -85,8 +83,8 @@ object Entrypoint {
       val (trainRdd, predictRdd) = rdf.rdd.getTrainAndPredictPartitions(partitions, trainParts, predictParts)
       clfAlgo.trainRdd = trainRdd
       clfAlgo.predictRdd = predictRdd
+      val inputPath = modelPath + "_" + size
       clfAlgo.run(saveModel = true, inputPath, doEvaluate = false)
-      inputPath = inputPath + "_" + size
     }
   }
 

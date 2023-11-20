@@ -2,7 +2,8 @@ package org.apache.spark.logo
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.logo.ml.classification.{Entrypoint => ClsEntry}
+import org.apache.spark.logo.ml.classification.{Entrypoint => ClfEntry}
+import org.apache.spark.logo.ml.clustering.{Entrypoint => CltEntry}
 
 object App {
 
@@ -45,8 +46,8 @@ object App {
   def run(args: Array[String]): Unit = {
     if (args.length > 0) {
       args(0) match {
-        case "clf" => ClsEntry.onArgs(spark, args.slice(1, args.length))
-//        case "clt" => CltEntry.onArgs(spark, args.slice(1, args.length))
+        case "clf" => ClfEntry.onArgs(spark, args.slice(1, args.length))
+        case "clt" => CltEntry.onArgs(spark, args.slice(1, args.length))
 //        case "fpg" => FpgEntry.onArgs(spark, args.slice(1, args.length))
         case "--executors" => {
           //          MaxExecutors = args(1).toInt

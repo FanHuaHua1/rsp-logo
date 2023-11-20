@@ -1,18 +1,15 @@
 package org.apache.spark
 
-import org.apache.spark.logo.ml.classification.{dt, lr, rf}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.rsp.RspRDD
+import org.apache.spark.logo.ml.clustering.BisectingKMeans
 import org.apache.spark.sql.RspContext.SparkSessionFunc
 import org.apache.spark.sql.{Row, RspDataset, SparkSession}
-import smile.classification.{RandomForest, DecisionTree, LogisticRegression}
 
 /**
  * @Author Lingxiang Zhao
  * @Date 2023/9/15 14:20
  * @desc
  */
-object lrDemo {
+object cltDemo {
   def main(args: Array[String]): Unit = {
     val sparkconf = new SparkConf().setAppName("Test_Smile").setMaster("local[*]")
     val spark = SparkSession
@@ -22,14 +19,11 @@ object lrDemo {
     println("------------环境配置成功---------------")
 
     //val frame: RspDataset[Row] = spark.rspRead.parquet(args(0))
-    val frame: RspDataset[Row] = spark.rspRead.parquet("datas/classification_50_2_0.54_5_64M.parquet")
+    val frame: RspDataset[Row] = spark.rspRead.parquet("datas/1118")
 
-    val value: RDD[(LogisticRegression, Double)] = lr(frame.rdd, 4, 1, true, 0.05, 500, 0.1)
-    //val value: RDD[(RandomForest, Double)] = rf(frame.rdd, 4, 1, true, 0.05, 20, 5)
-    //val value: RDD[(DecisionTree, Double)] = dt(frame.rdd, 4, 1)
-    value.collect()
-    println("============" + value.getNumPartitions)
-    value.foreach(f => println("===========" + f._2))
+    //val array: Array[Array[Double]] = KMeans(frame.rdd, 2, 0)
+    val array: Array[Array[Double]] = BisectingKMeans(frame.rdd, 2, 0)
+    array.foreach(f => println("===========" + f.mkString(",")))
 //    value.map(_._1).saveAsObjectFile("modules/ob")
 //    spark.close()
 //    val sc = new SparkContext(sparkconf)

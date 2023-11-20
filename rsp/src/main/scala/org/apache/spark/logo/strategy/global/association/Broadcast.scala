@@ -15,14 +15,14 @@ import scala.collection.mutable
  */
 object Broadcast {
   def apply(transaction: RDD[Array[Int]], itemSetRDD: RspRDD[ItemSet], count: Long, elem: Double): RspRDD[(String, Double)] = {
-    println("正在对本地频繁项集建模进行集成.....")
+    println("开始广播集成：")
     //用于广播
     val broadcastList2 = itemSetRDD
       .filter((item: ItemSet) => item.items.length > 1)
       .map((item: ItemSet) => item.items.toList.sorted.mkString(","))
       .distinct()
       .collect()
-
+    println("广播列表：")
     broadcastList2.foreach(println)
     val broadcastList: Array[List[Int]] = broadcastList2.map(_.split(",").map(_.toInt).toList)
     val value1: RDD[(String, Int)] = transaction.mapPartitions((arr: Iterator[Array[Int]]) => {

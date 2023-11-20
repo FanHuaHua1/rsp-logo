@@ -1,11 +1,10 @@
 package org.apache.spark.logo.ml.classification
 
-import javafx.util.Pair
 import org.apache.spark.logo.Utils
 import org.apache.spark.logo.etl.wrappers.BasicWrappers
 import org.apache.spark.rdd.RDD
 import org.apache.spark.rsp.RspRDD
-import org.apache.spark.sql.{Row, RspDataset}
+import org.apache.spark.sql.Row
 import smile.classification.{cart, DecisionTree => smileDT}
 import smile.data.DataFrame
 import smile.data.formula.Formula
