@@ -106,6 +106,7 @@
     <module>external/kafka-0-10-sql</module>
     <module>external/avro</module>
     <module>rsp</module>
+    <module>octopus-algo</module>
     <!-- See additional modules enabled by profiles below -->
   </modules>
 

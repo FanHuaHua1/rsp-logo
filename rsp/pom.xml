@@ -42,22 +42,6 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
-    <!-- smile data -->
-    <dependency>
-      <groupId>com.github.haifengl</groupId>
-      <artifactId>smile-core</artifactId>
-      <version>2.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.haifengl</groupId>
-      <artifactId>smile-spark_2.11</artifactId>
-      <version>2.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.haifengl</groupId>
-      <artifactId>smile-scala_2.11</artifactId>
-      <version>2.6.0</version>
-    </dependency>
     <dependency>
       <groupId>org.bytedeco</groupId>
       <artifactId>openblas-platform</artifactId>
