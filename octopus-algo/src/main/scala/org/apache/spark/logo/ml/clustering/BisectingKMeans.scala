@@ -58,7 +58,7 @@ class BisectingKMeans(
 object BisectingKMeans {
   def apply(rspRdd: RspRDD[Row], trainParNums: Int, predictParNums: Int, centerPath: String = "", maxIterations: Int = 100, tol: Double = 1.0E-4): Array[Array[Double]] = {
     val (trainRdd, predictRdd) = Utils.transform(rspRdd, trainParNums, predictParNums)
-    new BisectingKMeans(trainRdd, predictRdd).run(null, false, "", false)
+    new BisectingKMeans(trainRdd, predictRdd).run(null, false, false, "", false)
   }
 
 }

@@ -73,6 +73,6 @@ class RandomForest(
 object RandomForest {
   def apply(rspRdd: RspRDD[Row], trainParNums: Int, predictParNums: Int, useScore: Boolean = true, tail: Double= 0.05, nTrees: Int = 20, maxDepth: Int = 5): RDD[(smileRF, Double)] = {
     val (trainRdd, predictRdd) = Utils.transform(rspRdd, trainParNums, predictParNums)
-    new RandomForest(trainRdd, predictRdd, useScore, tail, nTrees, maxDepth).run(saveModel = false, "", doEvaluate = false)
+    new RandomForest(trainRdd, predictRdd, useScore, tail, nTrees, maxDepth).run(false, saveModel = false, "", doEvaluate = false)
   }
 }

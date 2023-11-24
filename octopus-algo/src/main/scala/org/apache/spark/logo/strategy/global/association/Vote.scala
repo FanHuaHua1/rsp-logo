@@ -13,16 +13,14 @@ import scala.collection.mutable
  * @desc
  */
 object Vote {
-  def apply(itemSetRDD: RspRDD[ItemSet]): RspRDD[(String, Int)] = {
-    println("开始投票集成：")
-
+  def apply(itemSetRDD: RspRDD[(String, Int)]): RspRDD[(String, Int)] = {
     val modelNum = itemSetRDD.partitions.length
     //itemSetRDD.map(f => (f.items, f.support)).saveAsObjectFile("modules/ob2")
     //将Itemset对象转成（频繁项集，出现次数）的KV对
-    val itemSetWithFreq: RDD[(String, Int)] = itemSetRDD
-      .filter(item => item.items.length > 1)
-      .map((item: ItemSet) => (item.items.toList.sorted.mkString("{", ",", "}"), item.support))
-    val itemSetWithFreqAndCount: RDD[(String, Int)] = itemSetWithFreq.map(elem => {
+//    val itemSetWithFreq: RDD[(String, Int)] = itemSetRDD
+//      .filter(item => item.items.length > 1)
+//      .map((item: ItemSet) => (item.items.toList.sorted.mkString("{", ",", "}"), item.support))
+    val itemSetWithFreqAndCount: RDD[(String, Int)] = itemSetRDD.map(elem => {
       (elem._1, (elem._2, 1))
     }).reduceByKey(
       (x, y) => (x._1 + y._1, x._2 + y._2)

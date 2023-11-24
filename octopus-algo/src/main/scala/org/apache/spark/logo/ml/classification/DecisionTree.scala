@@ -72,6 +72,6 @@ class DecisionTree(
 object DecisionTree {
   def apply(rspRdd: RspRDD[Row], trainParNums: Int, predictParNums: Int, useScore: Boolean = true, tail: Double= 0.05, maxDepth: Int = 10, nodeSize: Int = 10): RDD[(smileDT, Double)] = {
     val (trainRdd, predictRdd) = Utils.transform(rspRdd, trainParNums, predictParNums)
-    new DecisionTree(trainRdd, predictRdd, useScore, tail, maxDepth, nodeSize).run(saveModel = false, "", doEvaluate = false)
+    new DecisionTree(trainRdd, predictRdd, useScore, tail, maxDepth, nodeSize).run(false, saveModel = false, "", doEvaluate = false)
   }
 }

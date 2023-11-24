@@ -32,7 +32,7 @@ class BroadcastFPGrowth(var minSupport: Double = 0.15, var itemsets: RDD[Row]) e
     new RspRDD(valueSetRdd)
   }
 
-  def runText(saveModel: Boolean, saveModelPath: String) = {
+  def runText(isCrossDomain:Boolean, saveModel: Boolean, saveModelPath: String) = {
     val Transac: RspRDD[Array[Int]] = etlText(itemsets)
     val glomTransac = new RspRDD(Transac.glom())
     rowCount = glomTransac.count().toInt
@@ -50,6 +50,6 @@ class BroadcastFPGrowth(var minSupport: Double = 0.15, var itemsets: RDD[Row]) e
 
 object BroadcastFPGrowth {
   def apply(minSupport: Double, itemsets: RDD[Row]) = {
-    new BroadcastFPGrowth(minSupport, itemsets).runText(false, null)
+    new BroadcastFPGrowth(minSupport, itemsets).runText(false, false, null)
   }
 }

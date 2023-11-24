@@ -16,23 +16,35 @@ object Entrypoint {
    */
   def onArgs(spark: SparkSession, args: Array[String]): Unit = {
     args(0) match {
-      case "logoShuffle" => logoShuffle(
-        spark,
-        args(1), args(2), args(3), args(4),
-        args(5).toDouble, args(6).toInt,
-        args(7).toDouble,
-        args.slice(8, args.length).map(_.toInt)
-      )
+      case "logoShuffle" => fitLogoShuffle(spark, args)
       case _ => printf("Unknown type: %s\n", args(0))
     }
   }
 
-  def readCenters(spark: SparkSession, centersFile: String): Map[String, Array[Array[Double]]] = {
-    val df = spark.read.parquet(centersFile)
-    df.rdd.map(r => (
-      r.getString(0),
-      r.get(1).asInstanceOf[WrappedArray[DenseVector]].toArray.map(_.toArray)
-    )).collect().toMap
+  /**
+   * 带模型地址
+   *
+   * @param spark
+   * @param args
+   * @param useScore
+   */
+  def fitLogoShuffle(spark: SparkSession, args: Array[String]): Unit = {
+    if (args.length <= 5) {
+      logoShuffle(spark, args(1), args(2), args(3), args(4).toBoolean,
+        "/user/zhaolingxiang/rspmanager/algo/CenterClf.parquet:rspclf100_8000.parquet",
+        1.0, 1, 8, Array[Int] {
+          1
+        })
+    } else {
+      logoShuffle(
+        spark,
+        args(1), args(2), args(3), args(4).toBoolean, args(5),
+        args(6).toDouble, args(7).toInt,
+        args(8).toDouble,
+        args.slice(9, args.length).map(_.toInt)
+      )
+    }
+
   }
 
   /**
@@ -50,6 +62,7 @@ object Entrypoint {
                   algo: String,
                   sourceFile: String,
                   modelPath: String,
+                  isCrossDomain: Boolean,
                   centersFile: String,
                   subs: Double,
                   tests: Int,
@@ -72,7 +85,7 @@ object Entrypoint {
     val centers = centerMap(key)
     val cltAlgo = algo match {
       case "kmeans" => new KMeans()
-      case "bisecting" => new BisectingKMeans()
+      case "bisectingkmeans" => new BisectingKMeans()
     }
 
     val jobs: Array[(Int, Array[Int])] = Utils.generateShuffleArray(sizes, rdf.rdd.getNumPartitions)
@@ -88,8 +101,19 @@ object Entrypoint {
       cltAlgo.predictRdd = testRdd
       cltAlgo.trainName = trainName
       cltAlgo.centers = centers
-      val inputPath = modelPath + "_" + size
-      cltAlgo.run(spark, true, inputPath, true)
+      //val inputPath = modelPath + "_" + size
+      val inputPath = modelPath
+      cltAlgo.run(spark, isCrossDomain, true, inputPath, true)
     }
   }
+
+
+  def readCenters(spark: SparkSession, centersFile: String): Map[String, Array[Array[Double]]] = {
+    val df = spark.read.parquet(centersFile)
+    df.rdd.map(r => (
+      r.getString(0),
+      r.get(1).asInstanceOf[WrappedArray[DenseVector]].toArray.map(_.toArray)
+    )).collect().toMap
+  }
+
 }

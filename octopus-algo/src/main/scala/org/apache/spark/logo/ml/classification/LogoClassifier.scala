@@ -51,7 +51,7 @@ trait LogoClassifier[M]{
   def predictor(model: M, features: FEATURE): LABEL
 
 
-  def run(saveModel:Boolean, saveModelPath:String, doEvaluate: Boolean): RDD[(M, Double)]
+  def run(isCrossDomain:Boolean, saveModel:Boolean, saveModelPath:String, doEvaluate: Boolean): RDD[(M, Double)]
 
 
   def getValuedModels(modelRdd: RDD[(M, Double, Double)], useScore: Boolean, tail: Double = 0.05): RDD[(M, Double)] = {

@@ -13,5 +13,5 @@ import java.io.Serializable
 abstract class AssociationJob extends Serializable{
   var minSupport: Double
   var itemsets: RDD[Row]
-  def runText(saveModel: Boolean, saveMolPath: String)
+  def runText(isCrossDomain:Boolean, saveModel: Boolean, saveModelPath: String)
 }

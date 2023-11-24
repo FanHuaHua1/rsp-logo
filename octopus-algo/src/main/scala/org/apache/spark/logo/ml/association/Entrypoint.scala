@@ -21,13 +21,25 @@ object Entrypoint {
   }
 
   def fitLogoShuffle(spark: SparkSession, args: Array[String]): Unit = {
-    logoShuffle(spark, args(1), args(2), args(3), args(4).toDouble, args(5).toDouble, args.slice(6, args.length).map(_.toInt))
+    if (args.length <= 5) {
+      logoShuffle(spark, args(1), args(2), args(3), args(4).toBoolean,
+        0.15, 1.0, Array[Int] {
+          1
+        })
+    } else {
+      logoShuffle(
+        spark,
+        args(1), args(2), args(3), args(4).toBoolean,
+        args(5).toDouble, args(6).toDouble, args.slice(7, args.length).map(_.toInt))
+    }
+
   }
 
   def logoShuffle(spark: SparkSession,
                       algo: String,
                       sourceFile: String,
                       modelPath: String,
+                      isCrossDomain: Boolean,
                       minsup:Double,
                       sub:Double,
                       sizes: Array[Int]): Unit = {
@@ -35,20 +47,23 @@ object Entrypoint {
     val jobs: Array[(Int, Array[Int])] = Utils.generateShuffleArray(sizes, rdf.rdd.getNumPartitions)
     val fpgAlgo = algo match {
       case "Vote" => new VoteFPGrowth()
-      case "Broadcast" => new BroadcastFPGrowth()
+      //case "Broadcast" => new BroadcastFPGrowth()
     }
     for ((totalSize, partitions) <- jobs) {
       val size = Math.ceil(totalSize * sub).toInt
       var trainName = "train(size=%d)".format(size)
       var beginTime = LocalDateTime.now.format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmmss"))
+      print("%s start" + trainName)
       val trainRdd: RspRDD[Row] = rdf.rdd.getSubPartitions(partitions.slice(0, size))
       val l: Long = trainRdd.count()
-      val savePath = modelPath + "_" + totalSize
+      print("l: " + l )
+      //val savePath = modelPath + "_" + totalSize
+      val savePath = modelPath
       //这里是把minsup转化为对应某个分区的比例，
       // 比如10个块，原本是0.15的支持度，l是总数据条目，那么折算到每个块的（支持度对应的条数）就是 0.015 * l
       fpgAlgo.minSupport = (l * minsup / size).toInt
       fpgAlgo.itemsets = trainRdd
-      fpgAlgo.runText(true, savePath)
+      fpgAlgo.runText(isCrossDomain, true, savePath)
       //SmileFPGrowth.runv(value, vote, (l * minsup / size).toInt, "/user/caimeng/fpg" + System.currentTimeMillis() + sizex * 100 + "_" + minsup, inputPath)
     }
   }

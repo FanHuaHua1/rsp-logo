@@ -17,14 +17,7 @@ object fpgDemo {
       .config(sparkconf)
       .getOrCreate()
     println("------------环境配置成功---------------")
-
-    //val transaction= spark.rspRead.parquet("datas/transaction_dataset_30.parquet")
-    val transaction= spark.rspRead.text("datas/items_40.txt")
-    println("------数据加载成功-------")
-    //fpgVote(0.2, transaction.rdd)
-    fpgBroadcast(0.2, transaction.rdd)
-
-
+    val transaction= spark.rspRead.text("E:/expdatas/datas/items_40.txt")
+    fpgVote(0.15 * transaction.count() / transaction.rdd.getNumPartitions, transaction.rdd)
   }
-
 }

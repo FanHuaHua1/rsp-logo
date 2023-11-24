@@ -30,18 +30,25 @@ object Entrypoint {
    * @param useScore
    */
   def fitLogoShuffle(spark: SparkSession, args: Array[String], useScore: Boolean): Unit = {
-    logoShuffle(
-      spark, args(1), args(2), args(3),
-      args(4).toDouble, args(5).toDouble, args(6).toDouble,
-      args(7).toDouble, args.slice(8, args.length).map(_.toInt),
-      useScore
-    )
+    if(args.length <= 5){
+      logoShuffle(spark, args(1), args(2), args(3), args(4).toBoolean,
+        1.0, 1.0, 0, 8, Array[Int]{1}, useScore)
+    } else {
+      logoShuffle(
+        spark, args(1), args(2), args(3), args(4).toBoolean,
+        args(5).toDouble, args(6).toDouble, args(7).toDouble,
+        args(8).toDouble, args.slice(9, args.length).map(_.toInt),
+        useScore
+      )
+    }
+
   }
   /**
    *
    * @param spark
    * @param algo: String, 算法 DT|LR|RF|SVM
    * @param sourceFile: String, 数据文件
+   * @param modelPath: String, 模型地址
    * @param subs: Double, rsp取块比例
    * @param predicts: Double, 预测集块数
    * @param tails: Double, 头尾筛选比例
@@ -53,6 +60,7 @@ object Entrypoint {
                   algo: String,
                   sourceFile: String,
                   modelPath:String,
+                  isCrossDomain: Boolean,
                   subs: Double,
                   predicts: Double,
                   tails: Double,
@@ -92,8 +100,9 @@ object Entrypoint {
       val (trainRdd, predictRdd) = rdf.rdd.getTrainAndPredictPartitions(partitions, trainParts, predictParts)
       clfAlgo.trainRdd = trainRdd
       clfAlgo.predictRdd = predictRdd
-      val inputPath = modelPath + "_" + size
-      clfAlgo.run(saveModel = true, inputPath, doEvaluate = false)
+      //val inputPath = modelPath + "_" + size
+      val inputPath = modelPath
+      clfAlgo.run(isCrossDomain, saveModel = true, inputPath, doEvaluate = false)
     }
   }
 
@@ -110,7 +119,6 @@ object Entrypoint {
       result(i) = counts.maxBy(_._2)._1
       counts.clear()
     }
-
     (param._1, result)
   }
 

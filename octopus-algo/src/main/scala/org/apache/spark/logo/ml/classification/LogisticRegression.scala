@@ -69,7 +69,7 @@ class LogisticRegression(
 object LogisticRegression {
   def apply(rspRdd: RspRDD[Row], trainParNums: Int, predictParNums: Int, useScore: Boolean = true, tail: Double= 0.05, maxIter: Int = 500, regParam: Double = 0.1): RDD[(smileLR, Double)] = {
     val (trainRdd, predictRdd) = Utils.transform(rspRdd, trainParNums, predictParNums)
-    new LogisticRegression(trainRdd, predictRdd, useScore, tail, maxIter, regParam).run(saveModel = false, "", doEvaluate = false)
+    new LogisticRegression(trainRdd, predictRdd, useScore, tail, maxIter, regParam).run(false, saveModel = false, "", doEvaluate = false)
   }
 
 }

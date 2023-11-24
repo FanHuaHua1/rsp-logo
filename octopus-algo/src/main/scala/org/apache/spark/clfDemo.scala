@@ -17,11 +17,11 @@ object clfDemo {
       .config(sparkconf)
       .getOrCreate()
     println("------------环境配置成功---------------")
-    val filePath = if(args.length > 0) args(0) else "datas/classification_50_2_0.54_5_64M.parquet"
+    val filePath = if(args.length > 0) args(0) else "E:/expdatas/datas/classification_50_2_0.54_5_64M.parquet"
     val frame: RspDataset[Row] = spark.rspRead.parquet(filePath)
 
     //val value: RDD[(LogisticRegression, Double)] = lr(frame.rdd, 4, 1, true, 0.05, 500, 0.1)
-    val value = new LogisticRegression(frame.rdd, null, false, 0.05, 500, 0.1).run(false, "modules/ob222", false)
+    val value = new LogisticRegression(frame.rdd, null, false, 0.05, 500, 0.1).run(false, false,  "modules/ob222", false)
 
     //val value: RDD[(RandomForest, Double)] = rf(frame.rdd, 4, 1, true, 0.05, 20, 5)
     //val value: RDD[(DecisionTree, Double)] = dt(frame.rdd, 4, 1)

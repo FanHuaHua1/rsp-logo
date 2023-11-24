@@ -17,7 +17,7 @@ abstract class ClassificationJob[M] extends Serializable with LogoClassifier[M]{
   val tail: Double = 0.05
   var trainName: String = ""
 
-  override def run(saveModel: Boolean, saveModelPath: String, doEvaluate: Boolean): RDD[(M, Double)] = {
+  override def run(isCrossDomain:Boolean, saveModel: Boolean, saveModelPath: String, doEvaluate: Boolean): RDD[(M, Double)] = {
     val modelRdd: RDD[(M, Double, Double)] = etl(trainRdd).map(
       sample => {
         val trainSize = (sample._1.length * 0.9).toInt
@@ -28,14 +28,22 @@ abstract class ClassificationJob[M] extends Serializable with LogoClassifier[M]{
         (model, duration, accuracy)
       }
     )
-    val valuedModels: RDD[(M, Double)] = GO(modelRdd)
-    if (saveModel) {
-      val saveModelPair: RDD[Pair[M, Double]] = valuedModels.map(f => new Pair(f._1, f._2))
-      saveModelPair.saveAsObjectFile(saveModelPath)
+    if (isCrossDomain) {
+      println("save lo result directly for job crossdomain.")
+      println("lo result partition count:" + modelRdd.getNumPartitions)
+      val loModels: RDD[(M, Double)] = modelRdd.map(f => (f._1, f._3))
+      loModels.saveAsObjectFile(saveModelPath)
+      loModels
+    } else {
+      println("Not cross domain. Go integeration start.")
+      val valuedModels: RDD[(M, Double)] = GO(modelRdd)
+      if (saveModel) {
+        valuedModels.saveAsObjectFile(saveModelPath)
+      }
+      if (doEvaluate) {
+        evaluate(valuedModels, predictRdd)
+      }
+      valuedModels
     }
-    if (doEvaluate) {
-      evaluate(valuedModels, predictRdd)
-    }
-    valuedModels
   }
 }
