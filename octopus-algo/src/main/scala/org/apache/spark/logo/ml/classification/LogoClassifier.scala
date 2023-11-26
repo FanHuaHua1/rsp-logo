@@ -97,6 +97,7 @@ trait LogoClassifier[M]{
     printf("ValuedModel count: %d\n", modelRdd.count())
     val predictWithIndex = etl(predictRdd).zipWithIndex()
     val predicts = predictWithIndex.map(item => (item._2, item._1, item._1._1.length))
+    //val value: RDD[((M, Double), (Long, (LABEL, FEATURE), Int))] = modelRdd.cartesian(predicts)
     val prediction = modelRdd.cartesian(predicts).map(
       item => (item._2._1, predictor(item._1._1, item._2._2._2))
     ).groupBy(_._1)
