@@ -35,7 +35,7 @@ class BisectingKMeans(
    * @return (model: M，trainTimeSeconds: Double)
    */
   override def LO(features:FEATURE): (LOGOBisectingKMeans, Double) = {
-    val bisecting = new LOGOBisectingKMeans(k, maxIteractions);
+    val bisecting = new LOGOBisectingKMeans(k, maxIterations);
     val startTime = System.nanoTime
     bisecting.clustering(features)
     val duration = (System.nanoTime - startTime) * 0.000000001 //System.nanoTime为纳秒，转化为秒
